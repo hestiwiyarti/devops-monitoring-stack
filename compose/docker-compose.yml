@@ -1,0 +1,72 @@
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    volumes:
+      - ../configs/nginx/conf.d:/etc/nginx/conf.d:ro
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:1.4.2
+    depends_on: [nginx]
+    command:
+      - --nginx.scrape-uri=http://nginx:8080/stub_status
+      - --web.listen-address=:9114
+#    ports:
+ #     - "9114:9114"
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+      - --web.listen-address=:9091
+    ports:
+      - "9091:9091"
+    volumes:
+      - ../configs/prometheus:/etc/prometheus:ro
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+    ports:
+      - "9194:9193"
+    volumes:
+      - ../configs/alertmanager:/etc/alertmanager:ro
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+
+  node_exporter:
+    image: prom/node-exporter:v1.8.1
+    command:
+      - '--path.rootfs=/host'
+    pid: host
+    # ports:
+    #  - "9100:9100"
+    restart: unless-stopped
+    volumes:
+      - /:/host:ro,rslave
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  default:
+    name: compose_default
