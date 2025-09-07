@@ -15,4 +15,3 @@ jobs:
     steps:
       - name: Echo
         run: echo "Workflow triggers work!"
-
