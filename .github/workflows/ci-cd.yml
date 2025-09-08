@@ -1,17 +1,44 @@
-name: CI
+name: CI/CD
 
 on:
   push:
-    branches:
-      - main
-      - pipeline-upgrade
+    branches: [ "main", "pipeline-upgrade" ]
   pull_request:
-    branches:
-      - main
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
-  sanity-check:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - name: Echo
-        run: echo "Workflow triggers work!"
+      - uses: actions/checkout@v4
+
+      - name: Print tree
+        run: |
+          ls -la
+          ls -la app || true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Print Node/NPM versions
+        run: |
+          node -v
+          npm -v
+
+      - name: Install deps (prefer ci)
+        run: |
+          npm ci --prefix app || npm install --prefix app --no-audit --no-fund
+
+      - name: Lint
+        run: npm run lint --prefix app
+
+      - name: Tests
+        run: npm test --prefix app
+
+      - name: Build Docker (validation)
+        run: docker build -t devops-portfolio:ci .
