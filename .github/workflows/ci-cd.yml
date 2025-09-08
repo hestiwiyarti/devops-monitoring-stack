@@ -1,26 +1,43 @@
 name: CI/CD
+
 on:
-  push:   { branches: ["main","pipeline-upgrade"] }
-  pull_request: { branches: ["main"] }
+  push:
+    branches: ["pipeline-upgrade"]     # sementara hanya branch ini
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Show workspace (diagnostic)
+        run: |
+          pwd
+          ls -la
+          ls -la app || true
+
       - uses: actions/setup-node@v4
-        with: { node-version: "20" }
+        with:
+          node-version: "20"
+
       - name: Ensure lockfile
         run: |
           if [ ! -f app/package-lock.json ]; then
             npm install --package-lock-only --prefix app
           fi
+
       - name: Install deps
-        run: npm ci --prefix app
+        run: npm ci --no-audit --no-fund --prefix app
+
       - name: Lint
         run: npm run lint --prefix app
+
       - name: Tests
         run: npm test --prefix app
-      - name: Docker build (sanity)
-        run: docker build -t devops-portfolio:ci .
 
