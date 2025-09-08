@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  web:
+    image: ghcr.io/<YOUR_GH_USERNAME>/<YOUR_REPO>:${TAG:-latest}
+    env_file: .env.staging
+    ports:
+      - "18080:3000"
+    restart: unless-stopped
+

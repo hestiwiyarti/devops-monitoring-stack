@@ -1,0 +1,14 @@
+name: SMOKE
+
+on:
+  workflow_dispatch:
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say hello
+        run: |
+          echo "Repo: $GITHUB_REPOSITORY"
+          echo "Branch/Ref: $GITHUB_REF"
+          echo "It works ✅"

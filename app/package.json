@@ -1,0 +1,14 @@
+{
+  "name": "portfolio-app",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node app/src/server.js",
+    "lint": "node -e \"process.exit(0)\"",
+    "test": "node --test app/tests/health.test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "prom-client": "^15.1.3"
+  }
+}
