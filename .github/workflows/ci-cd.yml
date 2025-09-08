@@ -1,44 +1,26 @@
 name: CI/CD
-
 on:
-  push:
-    branches: [ "main", "pipeline-upgrade" ]
-  pull_request:
-    branches: [ "main" ]
-
-permissions:
-  contents: read
-  packages: write
+  push:   { branches: ["main","pipeline-upgrade"] }
+  pull_request: { branches: ["main"] }
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Print tree
-        run: |
-          ls -la
-          ls -la app || true
-
       - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Print Node/NPM versions
+        with: { node-version: "20" }
+      - name: Ensure lockfile
         run: |
-          node -v
-          npm -v
-
-      - name: Install deps (prefer ci)
-        run: |
-          npm ci --prefix app || npm install --prefix app --no-audit --no-fund
-
+          if [ ! -f app/package-lock.json ]; then
+            npm install --package-lock-only --prefix app
+          fi
+      - name: Install deps
+        run: npm ci --prefix app
       - name: Lint
         run: npm run lint --prefix app
-
       - name: Tests
         run: npm test --prefix app
-
-      - name: Build Docker (validation)
+      - name: Docker build (sanity)
         run: docker build -t devops-portfolio:ci .
+
