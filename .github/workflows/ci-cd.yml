@@ -1,15 +1,7 @@
 name: CI/CD
 
 on:
-  push:
-    branches: ["pipeline-upgrade"]     # sementara hanya branch ini
-  pull_request:
-    branches: ["main"]
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
+  workflow_dispatch:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
